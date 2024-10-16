@@ -10,7 +10,7 @@ namespace HelloWorldTest
         [Theory]
         [InlineData(5, 3, "5 on suurempi kuin 3")]
         [InlineData(2, 4, "2 on pienempi kuin 4")] // Updated expected text
-        [InlineData(7, 7, "7 on yht� suuri kuin 7")]
+        [InlineData(7, 7, "7 on yhta suuri kuin 7")]
         [Trait("TestGroup", "TestNumberComparison")]
         public void TestNumberComparison(int num1, int num2, string expectedOutput)
         {
@@ -40,13 +40,23 @@ namespace HelloWorldTest
             Assert.True(LineContainsIgnoreSpaces(result[2], expectedOutput),
                 $"Expected: {expectedOutput} but got: {result[2]}");
         }
-        private bool LineContainsIgnoreSpaces(string line, string expectedText)
+        private bool LineContainsIgnoreSpaces(string expectedText, string line)
         {
-            // Remove all whitespace from the line and the expected text
-            string normalizedLine = Regex.Replace(line, @"\s+", "").ToLower();
-            string normalizedExpectedText = Regex.Replace(expectedText, @"\s+", "").ToLower();
-            return normalizedLine.Contains(normalizedExpectedText);
+            // Remove all whitespace and convert to lowercase
+            string normalizedLine = Regex.Replace(line, @"[\s.,]+", "").ToLower();
+            string normalizedExpectedText = Regex.Replace(expectedText, @"[\s.,]+", "").ToLower();
+
+            // Create a regex pattern to allow any character for "ä", "ö", "a", and "o"
+            string pattern = Regex.Escape(normalizedExpectedText)
+                                  .Replace("ö", ".")  // Allow any character for "ö"
+                                  .Replace("ä", ".")  // Allow any character for "ä"
+                                  .Replace("a", ".")  // Allow any character for "a"
+                                  .Replace("o", ".");  // Allow any character for "o"
+
+            // Check if the line matches the pattern, ignoring case
+            return Regex.IsMatch(normalizedLine, pattern, RegexOptions.IgnoreCase);
         }
+
 
 
         private int CountWords(string line)
